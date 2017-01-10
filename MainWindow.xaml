@@ -5,8 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SourceStructureAnalyser"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        DataContext="{StaticResource appViewModel}"
+        Title="Quellcode-Struktur analysieren" Height="350" Width="525">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Button Command="{Binding Load, Mode=OneTime}">Laden</Button>
+            <Button Command="{Binding Save, Mode=OneTime}">Speichern</Button>
+        </StackPanel>
     </Grid>
 </Window>

@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:SourceStructureAnalyser"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <local:AppViewModel x:Key="appViewModel" />
     </Application.Resources>
 </Application>
