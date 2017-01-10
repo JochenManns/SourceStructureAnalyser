@@ -13,7 +13,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button>Laden</Button>
+            <Button Click="OnLoad">Laden</Button>
             <Button Click="OnSave">Speichern</Button>
         </StackPanel>
     </Grid>

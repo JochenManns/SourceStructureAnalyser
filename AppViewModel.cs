@@ -16,5 +16,8 @@ namespace SourceStructureAnalyser
 
         public void Save(string path)
             => m_model.Save(path);
+
+        public void Load(string path)
+            => m_model = Model.Load(path);
     }
 }

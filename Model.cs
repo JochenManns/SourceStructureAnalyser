@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 namespace SourceStructureAnalyser
 {
-    [XmlRoot(ElementName = "SourceStructure")]
+    [XmlRoot("SourceStructure")]
     public class Model
     {
         private static readonly XmlSerializer _Serializer = new XmlSerializer(typeof(Model));
