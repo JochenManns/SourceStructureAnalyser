@@ -8,22 +8,13 @@ namespace SourceStructureAnalyser
 {
     public class AppViewModel : ViewModel
     {
-        public Command Load { get; }
-
-        public Command Save { get; }
+        private Model m_model = new Model();
 
         public AppViewModel()
         {
-            Load = new Command(OnLoad);
-            Save = new Command(OnSave);
         }
 
-        private void OnLoad()
-        {
-        }
-
-        private void OnSave()
-        {
-        }
+        public void Save(string path)
+            => m_model.Save(path);
     }
 }

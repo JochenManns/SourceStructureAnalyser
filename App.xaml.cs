@@ -1,17 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Threading;
 
 namespace SourceStructureAnalyser
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
+    partial class App
     {
+        public App()
+        {
+            DispatcherUnhandledException += OnUnhandledException;
+        }
+
+        private void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show(e.Exception?.Message ?? "Unerwarter Fehler", "Da hat was nicht funktioniert!");
+
+            e.Handled = true;
+        }
     }
 }

@@ -13,8 +13,8 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button Command="{Binding Load, Mode=OneTime}">Laden</Button>
-            <Button Command="{Binding Save, Mode=OneTime}">Speichern</Button>
+            <Button>Laden</Button>
+            <Button Click="OnSave">Speichern</Button>
         </StackPanel>
     </Grid>
 </Window>
