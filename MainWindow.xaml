@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SourceStructureAnalyser"
         mc:Ignorable="d"
         DataContext="{StaticResource appViewModel}"
-        Title="Quellcode-Struktur analysieren" Height="600" Width="800" MinHeight="600" MinWidth="800" Icon="app.ico">
+        Title="Quellcode-Struktur analysieren" Height="1000" Width="1500" MinHeight="400" MinWidth="800" Icon="app.ico">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="auto" />
@@ -70,30 +70,49 @@
 						</TreeView.Resources>
 					</TreeView>
 
-					<StackPanel Grid.Column="1" Orientation="Vertical" DataContext="{Binding ElementName=tree, Path=SelectedItem}">
-						<CheckBox IsChecked="{Binding IsExcluded, Mode=TwoWay}">
+					<Grid Grid.Column="1" DataContext="{Binding ElementName=tree, Path=SelectedItem}">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="*" />
+						</Grid.RowDefinitions>
+
+						<CheckBox Grid.Row="0" IsChecked="{Binding IsExcluded, Mode=TwoWay}">
 							<TextBlock Text="Ausgeschlossen" Margin="4,0,4,0" />
 						</CheckBox>
-						<TextBlock Text="Beschreibung" />
-						<TextBox Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="200" TextWrapping="Wrap" AcceptsReturn="True" />
-						<TextBlock Text="Anzahl Verzeichnisse" />
-						<TextBlock Text="{Binding NumberOfFolders, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
-						<TextBlock Text="Anzahl Dateien" />
-						<TextBlock Text="{Binding NumberOfFiles, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
-						<TextBlock Text="Anzahl Zeilen" />
-						<TextBlock Text="{Binding NumberOfLines, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
-						<ListView ItemsSource="{Binding Extensions, Mode=OneTime}">
+						<TextBlock Grid.Row="1" Text="Beschreibung" />
+						<TextBox Grid.Row="2" Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="200" TextWrapping="Wrap" AcceptsReturn="True" />
+						<TextBlock Grid.Row="3" Text="Anzahl Verzeichnisse" />
+						<TextBlock Grid.Row="4" Text="{Binding NumberOfFolders, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<TextBlock Grid.Row="5" Text="Anzahl Dateien" />
+						<TextBlock Grid.Row="6" Text="{Binding NumberOfFiles, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<TextBlock Grid.Row="7" Text="Anzahl Zeilen" />
+						<TextBlock Grid.Row="8" Text="{Binding NumberOfLines, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<ListView Grid.Row="9" ItemsSource="{Binding Extensions, Mode=OneTime}">
+							<ListView.ItemContainerStyle>
+								<Style TargetType="ListViewItem">
+									<Setter Property="HorizontalContentAlignment" Value="Center"/>
+								</Style>
+							</ListView.ItemContainerStyle>
+
 							<ListView.View>
 								<GridView>
 									<GridView.Columns>
-										<GridViewColumn Header="Typ" DisplayMemberBinding="{Binding Name, Mode=OneTime}" />
-										<GridViewColumn Header="Dateien" DisplayMemberBinding="{Binding NumberOfFiles, Mode=OneTime}" />
-										<GridViewColumn Header="Zeilen" DisplayMemberBinding="{Binding NumberOfLines, Mode=OneTime}" />
+										<GridViewColumn Header="Typ" DisplayMemberBinding="{Binding Name, Mode=OneTime}" Width="100" />
+										<GridViewColumn Header="Dateien" DisplayMemberBinding="{Binding NumberOfFiles, StringFormat=N0, Mode=OneTime}" Width="100" />
+										<GridViewColumn Header="Zeilen" DisplayMemberBinding="{Binding NumberOfLines, StringFormat=N0, Mode=OneTime}" Width="100" />
 									</GridView.Columns>
 								</GridView>
 							</ListView.View>
 						</ListView>
-					</StackPanel>
+					</Grid>
 				</Grid>
 			</TabItem>
 			<TabItem Header="Ausgeschlossene Dateiendungen">

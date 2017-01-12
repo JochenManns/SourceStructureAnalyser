@@ -127,7 +127,7 @@ namespace SourceStructureAnalyser
 
 		public string RootPath { get; set; }
 
-		public string[] ExcludedExtensions { get; set; } = { ".dll", ".exe", ".ocx", ".docx", ".pptx", ".tlb", ".png", ".jpg" };
+		public string[] ExcludedExtensions { get; set; } = { };
 
 		public FolderInfo RootFolder { get; set; } = new FolderInfo();
 
