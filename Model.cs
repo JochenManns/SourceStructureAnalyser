@@ -24,8 +24,14 @@ namespace SourceStructureAnalyser
 			[XmlElement( "File" )]
 			public readonly List<FileInfo> Files = new List<FileInfo>();
 
+			[XmlAttribute( "excluded" )]
+			public bool IsExcluded { get; set; }
+
+			public IEnumerable<FolderInfo> GetAllFolders() =>
+				Folders.Concat( Folders.SelectMany( f => f.Folders ) );
+
 			public IEnumerable<FileInfo> GetAllFiles() =>
-				Folders.SelectMany( f => f.GetAllFiles() ).Concat( Files );
+				Files.Concat( Folders.SelectMany( f => f.GetAllFiles() ) );
 
 			public bool Scan( string path, HashSet<string> excludedExtensions, CancellationToken cancel )
 			{
@@ -46,6 +52,13 @@ namespace SourceStructureAnalyser
 						knownFolders.Add( name, folder );
 
 						Folders.Add( folder );
+					}
+					else if (folder.IsExcluded)
+					{
+						folder.Folders.Clear();
+						folder.Files.Clear();
+
+						continue;
 					}
 
 					if (!folder.Scan( dir, excludedExtensions, cancel ))
@@ -97,9 +110,12 @@ namespace SourceStructureAnalyser
 			[XmlAttribute( "lines" )]
 			public int NumberOfLines { get; set; }
 
+			[XmlAttribute( "excluded" )]
+			public bool IsExcluded { get; set; }
+
 			public void Scan( string path )
 			{
-				NumberOfLines = File.ReadAllLines( path ).Length;
+				NumberOfLines = IsExcluded ? 0 : File.ReadAllLines( path ).Length;
 			}
 		}
 

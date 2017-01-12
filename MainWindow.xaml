@@ -37,28 +37,74 @@
 				<ColumnDefinition Width="auto" />
 			</Grid.ColumnDefinitions>
 
-			<TextBox Grid.Column="0" Text="{Binding RootFolder, Mode=TwoWay}" IsReadOnly="true" />
+			<TextBox Grid.Column="0" Text="{Binding RootPath, Mode=TwoWay}" IsReadOnly="true" />
 			<Button Grid.Column="1" Click="OnSelectFolder" IsEnabled="{Binding CanChange, Mode=OneWay}">...</Button>
 		</Grid>
 
 		<TextBlock Grid.Row="2" Grid.Column="0" Text="Anzahl Dateien:" />
-		<TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding NumberOfFiles, Mode=OneWay}" />
+		<TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding NumberOfFiles, StringFormat=N0, Mode=OneWay}" />
 
 		<TextBlock Grid.Row="3" Grid.Column="0" Text="Anzahl Zeilen:" />
-		<TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding NumberOfLines, Mode=OneWay}" />
+		<TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding NumberOfLines, StringFormat=N0, Mode=OneWay}" />
 
-		<TabControl Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+		<TabControl Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" IsEnabled="{Binding CanChange, Mode=OneWay}">
+			<TabItem Header="Dateistruktur">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="2*" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+
+					<TreeView x:Name="tree" Grid.Column="0" ItemsSource="{Binding RootFolder.Folders, Mode=OneWay}">
+						<TreeView.Resources>
+							<HierarchicalDataTemplate DataType="{x:Type local:FolderViewModel}" ItemsSource="{Binding Folders}">
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Text="{Binding Name, Mode=OneTime}" Margin="4,4,0,4" />
+									<TextBlock Text=" (" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfFiles, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text="/" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfLines, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text=")" Margin="0,4,4,4" />
+								</StackPanel>
+							</HierarchicalDataTemplate>
+						</TreeView.Resources>
+					</TreeView>
+
+					<StackPanel Grid.Column="1" Orientation="Vertical" DataContext="{Binding ElementName=tree, Path=SelectedItem}">
+						<CheckBox IsChecked="{Binding IsExcluded, Mode=TwoWay}">
+							<TextBlock Text="Ausgeschlossen" Margin="4,0,4,0" />
+						</CheckBox>
+						<TextBlock Text="Anzahl Verzeichnisse" />
+						<TextBlock Text="{Binding NumberOfFolders, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<TextBlock Text="Anzahl Dateien" />
+						<TextBlock Text="{Binding NumberOfFiles, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<TextBlock Text="Anzahl Zeilen" />
+						<TextBlock Text="{Binding NumberOfLines, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<ListView ItemsSource="{Binding Extensions, Mode=OneTime}">
+							<ListView.View>
+								<GridView>
+									<GridView.Columns>
+										<GridViewColumn Header="Typ" DisplayMemberBinding="{Binding Name, Mode=OneTime}" />
+										<GridViewColumn Header="Dateien" DisplayMemberBinding="{Binding NumberOfFiles, Mode=OneTime}" />
+										<GridViewColumn Header="Zeilen" DisplayMemberBinding="{Binding NumberOfLines, Mode=OneTime}" />
+									</GridView.Columns>
+								</GridView>
+							</ListView.View>
+						</ListView>
+					</StackPanel>
+				</Grid>
+			</TabItem>
 			<TabItem Header="Ausgeschlossene Dateiendungen">
 				<ListBox ItemsSource="{Binding Extensions, Mode=OneWay}">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
 							<CheckBox IsChecked="{Binding IsExcluded, Mode=TwoWay}">
-								<StackPanel Orientation="Horizontal">
-									<TextBlock Text="{Binding Name, Mode=OneTime}" Margin="4,4,0,4" />
+								<StackPanel Orientation="Horizontal" Margin="0,-4,0,-4">
+									<TextBlock Text="{Binding Name, Mode=OneTime}" Margin="4,0,0,4" />
 									<TextBlock Text=" (" Margin="0,4,0,4" />
-									<TextBlock Text="{Binding NumberOfFiles, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfFiles, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
 									<TextBlock Text="/" Margin="0,4,0,4" />
-									<TextBlock Text="{Binding NumberOfLines, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfLines, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
 									<TextBlock Text=")" Margin="0,4,4,4" />
 								</StackPanel>
 							</CheckBox>

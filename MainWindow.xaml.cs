@@ -66,13 +66,13 @@ namespace SourceStructureAnalyser
 			{
 				Description = "Bitte das Wurzelverzeichnis der Quellen auswählen",
 				RootFolder = Environment.SpecialFolder.Desktop,
-				SelectedPath = ViewModel.RootFolder,
+				SelectedPath = ViewModel.RootPath,
 				ShowNewFolderButton = false
 			};
 
 			using (dialog)
 				if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-					ViewModel.RootFolder = dialog.SelectedPath;
+					ViewModel.RootPath = dialog.SelectedPath;
 		}
 	}
 }

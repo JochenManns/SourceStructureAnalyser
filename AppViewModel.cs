@@ -2,52 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace SourceStructureAnalyser
 {
 	public class AppViewModel : ViewModel
 	{
-		public class ExtensionModel : ViewModel
-		{
-			public string Name { get; }
-
-			public int NumberOfFiles { get; }
-
-			public int NumberOfLines { get; }
-
-			private bool m_excluded;
-
-			public bool IsExcluded
-			{
-				get { return m_excluded; }
-				set
-				{
-					if (value == m_excluded)
-						return;
-
-					m_excluded = value;
-
-					OnPropertyChange( nameof( m_excluded ) );
-
-					m_model.UpdateExtensions();
-				}
-			}
-
-			private readonly AppViewModel m_model;
-
-			public ExtensionModel( string name, int count, int totalLines, bool excluded, AppViewModel model )
-			{
-				NumberOfLines = totalLines;
-				m_excluded = excluded;
-				NumberOfFiles = count;
-				m_model = model;
-				Name = name;
-			}
-		}
-
 		private Model m_model = new Model();
 
 		private volatile bool m_busy;
@@ -58,9 +18,9 @@ namespace SourceStructureAnalyser
 
 		public bool CanLoad => !m_busy;
 
-		public bool CanSave => !m_busy && IsModified;
+		public bool CanSave => !m_busy && m_modified;
 
-		public string RootFolder
+		public string RootPath
 		{
 			get { return m_model.RootPath; }
 			set
@@ -70,24 +30,40 @@ namespace SourceStructureAnalyser
 
 				m_model.RootPath = value;
 
-				OnModify( nameof( RootFolder ) );
+				OnModify( nameof( RootPath ) );
 
 				Scan.FireChange();
 			}
 		}
 
-		public bool IsModified { get; private set; }
+		private FolderViewModel m_rootFolder;
+
+		public FolderViewModel RootFolder => m_rootFolder ?? (m_rootFolder = new FolderViewModel( m_model.RootFolder, this ));
+
+		private bool m_modified;
+
+		public bool IsModified
+		{
+			get { return m_modified; }
+			set
+			{
+				if (value == m_modified)
+					return;
+
+				m_modified = value;
+
+				OnPropertyChange( nameof( IsModified ) );
+				OnPropertyChange( nameof( CanSave ) );
+			}
+		}
 
 		private CancellationTokenSource m_cancel;
 
 		private void OnModify( string propertyName )
 		{
-			IsModified = true;
-
 			OnPropertyChange( propertyName );
 
-			OnPropertyChange( nameof( CanSave ) );
-			OnPropertyChange( nameof( IsModified ) );
+			IsModified = true;
 		}
 
 		public ExtensionModel[] Extensions { get; private set; } = { };
@@ -141,7 +117,7 @@ namespace SourceStructureAnalyser
 			}
 		}
 
-		private void UpdateExtensions()
+		public void UpdateExtensions()
 		{
 			m_model.ExcludedExtensions = Extensions.Where( e => e.IsExcluded ).Select( e => e.Name ).ToArray();
 
@@ -153,19 +129,20 @@ namespace SourceStructureAnalyser
 			m_model.Save( path );
 
 			IsModified = false;
-
-			OnPropertyChange( nameof( IsModified ) );
 		}
 
-		private void SyncExtensions()
+		public static ExtensionModel[] FilesToExtensions( Model.FolderInfo folder, Action<int> reportFileCount, Action<int> reportLineCount, AppViewModel model, IEnumerable<string> allExcluded = null )
 		{
-			var excluded = new HashSet<string>( m_model.ExcludedExtensions, StringComparer.InvariantCultureIgnoreCase );
+			var excluded = new HashSet<string>( allExcluded ?? Enumerable.Empty<string>(), StringComparer.InvariantCultureIgnoreCase );
 
-			var files = m_model.RootFolder.GetAllFiles().ToArray();
+			var files = folder.GetAllFiles().ToArray();
 			var filesMapped = files.GroupBy( f => Path.GetExtension( f.Name ), excluded.Comparer ).ToDictionary( g => g.Key, g => new { Count = g.Count(), Lines = g.Sum( f => f.NumberOfLines ) } );
 			var scratch = filesMapped.Values.FirstOrDefault();
 
-			Extensions =
+			reportFileCount( files.Length );
+			reportLineCount( files.Sum( f => f.NumberOfLines ) );
+
+			return
 				excluded
 					.Concat( filesMapped.Keys )
 					.Distinct()
@@ -174,13 +151,19 @@ namespace SourceStructureAnalyser
 					{
 						filesMapped.TryGetValue( e, out scratch );
 
-						return new ExtensionModel( e, scratch?.Count ?? 0, scratch?.Lines ?? 0, excluded.Contains( e ), this );
+						return new ExtensionModel( e, scratch?.Count ?? 0, scratch?.Lines ?? 0, excluded.Contains( e ), model );
 					} )
 					.ToArray();
 
-			NumberOfFiles = files.Length;
-			NumberOfLines = files.Sum( f => f.NumberOfLines );
+		}
 
+		private void SyncExtensions()
+		{
+			Extensions = FilesToExtensions( m_model.RootFolder, c => NumberOfFiles = c, c => NumberOfLines = c, this, m_model.ExcludedExtensions );
+
+			m_rootFolder = null;
+
+			OnPropertyChange( nameof( RootFolder ) );
 			OnPropertyChange( nameof( Extensions ) );
 			OnPropertyChange( nameof( NumberOfFiles ) );
 			OnPropertyChange( nameof( NumberOfLines ) );
@@ -198,5 +181,6 @@ namespace SourceStructureAnalyser
 
 			Scan.FireChange();
 		}
+
 	}
 }

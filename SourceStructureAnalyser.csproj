@@ -59,6 +59,8 @@
     </ApplicationDefinition>
     <Compile Include="AppViewModel.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="ExtensionModel.cs" />
+    <Compile Include="FolderViewModel.cs" />
     <Compile Include="ViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
