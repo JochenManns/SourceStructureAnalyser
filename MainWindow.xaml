@@ -6,15 +6,142 @@
         xmlns:local="clr-namespace:SourceStructureAnalyser"
         mc:Ignorable="d"
         DataContext="{StaticResource appViewModel}"
-        Title="Quellcode-Struktur analysieren" Height="350" Width="525">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-        </Grid.RowDefinitions>
+        Title="Quellcode-Struktur analysieren" Height="1000" Width="1500" MinHeight="400" MinWidth="800" Icon="app.ico">
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="auto" />
+			<ColumnDefinition Width="10" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button Click="OnLoad">Laden</Button>
-            <Button Click="OnSave">Speichern</Button>
-        </StackPanel>
-    </Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
+			<Button Click="OnLoad" IsEnabled="{Binding CanLoad, Mode=OneWay}">Laden</Button>
+			<Button Click="OnSave" IsEnabled="{Binding CanSave, Mode=OneWay}">Speichern</Button>
+			<Button Command="{Binding Scan, Mode=OneTime}">
+				<TextBlock Text="{Binding ScanText, Mode=OneWay}" />
+			</Button>
+		</StackPanel>
+
+		<TextBlock Grid.Row="1" Grid.Column="0" Text="Verzeichnis:" />
+		<Grid Grid.Row="1" Grid.Column="2">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="auto" />
+			</Grid.ColumnDefinitions>
+
+			<TextBox Grid.Column="0" Text="{Binding RootPath, Mode=TwoWay}" IsReadOnly="true" />
+			<Button Grid.Column="1" Click="OnSelectFolder" IsEnabled="{Binding CanChange, Mode=OneWay}">...</Button>
+		</Grid>
+
+		<TextBlock Grid.Row="2" Grid.Column="0" Text="Anzahl Dateien:" />
+		<TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding NumberOfFiles, StringFormat=N0, Mode=OneWay}" />
+
+		<TextBlock Grid.Row="3" Grid.Column="0" Text="Anzahl Zeilen:" />
+		<TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding NumberOfLines, StringFormat=N0, Mode=OneWay}" />
+
+		<TabControl Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" IsEnabled="{Binding CanChange, Mode=OneWay}">
+			<TabItem Header="Dateistruktur">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="2*" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+
+					<TreeView x:Name="tree" Grid.Column="0" ItemsSource="{Binding RootFolder.Folders, Mode=OneWay}">
+						<TreeView.Resources>
+							<HierarchicalDataTemplate DataType="{x:Type local:FolderViewModel}" ItemsSource="{Binding Folders}">
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Text="{Binding Name, Mode=OneTime}" Foreground="{Binding UiColor, Mode=OneWay}" Margin="4,4,0,4" />
+									<TextBlock Text=" (" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfFiles, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text="/" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfLines, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text=")" Margin="0,4,4,4" />
+								</StackPanel>
+							</HierarchicalDataTemplate>
+						</TreeView.Resources>
+					</TreeView>
+
+					<Grid Grid.Column="1" DataContext="{Binding ElementName=tree, Path=SelectedItem}">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="*" />
+						</Grid.RowDefinitions>
+
+						<CheckBox Grid.Row="0" IsChecked="{Binding IsExcluded, Mode=TwoWay}">
+							<TextBlock Text="Ausgeschlossen" Margin="4,0,4,0" />
+						</CheckBox>
+						<ComboBox Grid.Row="1" ItemsSource="{Binding Colors, Mode=OneTime}" SelectedItem="{Binding Color, Mode=TwoWay}">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Mode=OneTime}" Margin="2" />
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+						<TextBlock Grid.Row="2" Text="Beschreibung" />
+						<TextBox Grid.Row="3" Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="200" TextWrapping="Wrap" AcceptsReturn="True" />
+						<TextBlock Grid.Row="4" Text="Anzahl Verzeichnisse" />
+						<TextBlock Grid.Row="5" Text="{Binding NumberOfFolders, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<TextBlock Grid.Row="6" Text="Anzahl Dateien" />
+						<TextBlock Grid.Row="7" Text="{Binding NumberOfFiles, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<TextBlock Grid.Row="8" Text="Anzahl Zeilen" />
+						<TextBlock Grid.Row="9" Text="{Binding NumberOfLines, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<ListView Grid.Row="10" ItemsSource="{Binding Extensions, Mode=OneTime}">
+							<ListView.ItemContainerStyle>
+								<Style TargetType="ListViewItem">
+									<Setter Property="HorizontalContentAlignment" Value="Center"/>
+								</Style>
+							</ListView.ItemContainerStyle>
+
+							<ListView.View>
+								<GridView>
+									<GridView.Columns>
+										<GridViewColumn Header="Typ" DisplayMemberBinding="{Binding Name, Mode=OneTime}" Width="100" />
+										<GridViewColumn Header="Dateien" DisplayMemberBinding="{Binding NumberOfFiles, StringFormat=N0, Mode=OneTime}" Width="100" />
+										<GridViewColumn Header="Zeilen" DisplayMemberBinding="{Binding NumberOfLines, StringFormat=N0, Mode=OneTime}" Width="100" />
+									</GridView.Columns>
+								</GridView>
+							</ListView.View>
+						</ListView>
+					</Grid>
+				</Grid>
+			</TabItem>
+			<TabItem Header="Ausgeschlossene Dateiendungen">
+				<ListBox ItemsSource="{Binding Extensions, Mode=OneWay}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<CheckBox IsChecked="{Binding IsExcluded, Mode=TwoWay}">
+								<StackPanel Orientation="Horizontal" Margin="0,-4,0,-4">
+									<TextBlock Text="{Binding Name, Mode=OneTime}" Margin="4,4,0,4" />
+									<TextBlock Text=" (" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfFiles, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text="/" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfLines, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text=")" Margin="0,4,4,4" />
+								</StackPanel>
+							</CheckBox>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</TabItem>
+		</TabControl>
+
+	</Grid>
 </Window>
