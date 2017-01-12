@@ -1,5 +1,6 @@
-﻿using Microsoft.Win32;
+﻿using System;
 using System.Windows;
+using Microsoft.Win32;
 
 namespace SourceStructureAnalyser
 {
@@ -57,6 +58,21 @@ namespace SourceStructureAnalyser
 
 			Properties.Settings.Default.LastConfigPath = dialog.FileName;
 			Properties.Settings.Default.Save();
+		}
+
+		private void OnSelectFolder( object sender, RoutedEventArgs e )
+		{
+			var dialog = new System.Windows.Forms.FolderBrowserDialog
+			{
+				Description = "Bitte das Wurzelverzeichnis der Quellen auswählen",
+				RootFolder = Environment.SpecialFolder.Desktop,
+				SelectedPath = ViewModel.RootFolder,
+				ShowNewFolderButton = false
+			};
+
+			using (dialog)
+				if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+					ViewModel.RootFolder = dialog.SelectedPath;
 		}
 	}
 }

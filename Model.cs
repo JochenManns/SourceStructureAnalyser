@@ -17,7 +17,7 @@ namespace SourceStructureAnalyser
 		public void Save( Stream stream )
 		{
 			using (var write = XmlWriter.Create( stream, _Write ))
-				_Serializer.Serialize( stream, this );
+				_Serializer.Serialize( write, this );
 		}
 
 		public void Save( string path )

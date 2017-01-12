@@ -50,6 +50,12 @@ namespace SourceStructureAnalyser
 		}
 
 		public void Load( string path )
-			=> m_model = Model.Load( path );
+		{
+			m_model = Model.Load( path );
+
+			m_modified = false;
+
+			OnPropertyChange( null );
+		}
 	}
 }

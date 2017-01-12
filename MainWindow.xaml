@@ -7,14 +7,32 @@
         mc:Ignorable="d"
         DataContext="{StaticResource appViewModel}"
         Title="Quellcode-Struktur analysieren" Height="350" Width="525">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-        </Grid.RowDefinitions>
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="auto" />
+			<ColumnDefinition Width="10" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Button Click="OnLoad">Laden</Button>
-            <Button Click="OnSave" IsEnabled="{Binding IsModified, Mode=OneWay}">Speichern</Button>
-        </StackPanel>
-    </Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="auto" />
+		</Grid.RowDefinitions>
+
+		<StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
+			<Button Click="OnLoad">Laden</Button>
+			<Button Click="OnSave" IsEnabled="{Binding IsModified, Mode=OneWay}">Speichern</Button>
+		</StackPanel>
+
+		<TextBlock Grid.Row="1" Grid.Column="0" Text="Verzeichnis:" />
+		<Grid Grid.Row="1" Grid.Column="2">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="auto" />
+			</Grid.ColumnDefinitions>
+
+			<TextBox Grid.Column="0" Text="{Binding RootFolder, Mode=TwoWay}" IsReadOnly="true" />
+			<Button Grid.Column="1" Click="OnSelectFolder">...</Button>
+		</Grid>
+	</Grid>
 </Window>
