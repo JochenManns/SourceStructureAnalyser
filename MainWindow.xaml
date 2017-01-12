@@ -17,6 +17,9 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="auto" />
 			<RowDefinition Height="auto" />
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="auto" />
+			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
 
 		<StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
@@ -37,5 +40,33 @@
 			<TextBox Grid.Column="0" Text="{Binding RootFolder, Mode=TwoWay}" IsReadOnly="true" />
 			<Button Grid.Column="1" Click="OnSelectFolder" IsEnabled="{Binding CanChange, Mode=OneWay}">...</Button>
 		</Grid>
+
+		<TextBlock Grid.Row="2" Grid.Column="0" Text="Anzahl Dateien:" />
+		<TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding NumberOfFiles, Mode=OneWay}" />
+
+		<TextBlock Grid.Row="3" Grid.Column="0" Text="Anzahl Zeilen:" />
+		<TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding NumberOfLines, Mode=OneWay}" />
+
+		<TabControl Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+			<TabItem Header="Ausgeschlossene Dateiendungen">
+				<ListBox ItemsSource="{Binding Extensions, Mode=OneWay}">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<CheckBox IsChecked="{Binding IsExcluded, Mode=TwoWay}">
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Text="{Binding Name, Mode=OneTime}" Margin="4,4,0,4" />
+									<TextBlock Text=" (" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfFiles, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text="/" Margin="0,4,0,4" />
+									<TextBlock Text="{Binding NumberOfLines, Mode=OneTime}" Margin="0,4,0,4" />
+									<TextBlock Text=")" Margin="0,4,4,4" />
+								</StackPanel>
+							</CheckBox>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</TabItem>
+		</TabControl>
+
 	</Grid>
 </Window>

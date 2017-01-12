@@ -24,6 +24,9 @@ namespace SourceStructureAnalyser
 			[XmlElement( "File" )]
 			public readonly List<FileInfo> Files = new List<FileInfo>();
 
+			public IEnumerable<FileInfo> GetAllFiles() =>
+				Folders.SelectMany( f => f.GetAllFiles() ).Concat( Files );
+
 			public bool Scan( string path, HashSet<string> excludedExtensions, CancellationToken cancel )
 			{
 				if (cancel.IsCancellationRequested)
@@ -91,8 +94,12 @@ namespace SourceStructureAnalyser
 			[XmlAttribute( "name" )]
 			public string Name { get; set; }
 
+			[XmlAttribute( "lines" )]
+			public int NumberOfLines { get; set; }
+
 			public void Scan( string path )
 			{
+				NumberOfLines = File.ReadAllLines( path ).Length;
 			}
 		}
 

@@ -10,6 +10,44 @@ namespace SourceStructureAnalyser
 {
 	public class AppViewModel : ViewModel
 	{
+		public class ExtensionModel : ViewModel
+		{
+			public string Name { get; }
+
+			public int NumberOfFiles { get; }
+
+			public int NumberOfLines { get; }
+
+			private bool m_excluded;
+
+			public bool IsExcluded
+			{
+				get { return m_excluded; }
+				set
+				{
+					if (value == m_excluded)
+						return;
+
+					m_excluded = value;
+
+					OnPropertyChange( nameof( m_excluded ) );
+
+					m_model.UpdateExtensions();
+				}
+			}
+
+			private readonly AppViewModel m_model;
+
+			public ExtensionModel( string name, int count, int totalLines, bool excluded, AppViewModel model )
+			{
+				NumberOfLines = totalLines;
+				m_excluded = excluded;
+				NumberOfFiles = count;
+				m_model = model;
+				Name = name;
+			}
+		}
+
 		private Model m_model = new Model();
 
 		private volatile bool m_busy;
@@ -52,6 +90,12 @@ namespace SourceStructureAnalyser
 			OnPropertyChange( nameof( IsModified ) );
 		}
 
+		public ExtensionModel[] Extensions { get; private set; } = { };
+
+		public int NumberOfFiles { get; private set; }
+
+		public int NumberOfLines { get; private set; }
+
 		public Command Scan { get; }
 
 		public AppViewModel()
@@ -89,12 +133,20 @@ namespace SourceStructureAnalyser
 			}
 			finally
 			{
+				SyncExtensions();
+
 				m_busy = false;
 
 				OnModify( null );
 			}
 		}
 
+		private void UpdateExtensions()
+		{
+			m_model.ExcludedExtensions = Extensions.Where( e => e.IsExcluded ).Select( e => e.Name ).ToArray();
+
+			OnModify( nameof( IsModified ) );
+		}
 
 		public void Save( string path )
 		{
@@ -105,9 +157,40 @@ namespace SourceStructureAnalyser
 			OnPropertyChange( nameof( IsModified ) );
 		}
 
+		private void SyncExtensions()
+		{
+			var excluded = new HashSet<string>( m_model.ExcludedExtensions, StringComparer.InvariantCultureIgnoreCase );
+
+			var files = m_model.RootFolder.GetAllFiles().ToArray();
+			var filesMapped = files.GroupBy( f => Path.GetExtension( f.Name ), excluded.Comparer ).ToDictionary( g => g.Key, g => new { Count = g.Count(), Lines = g.Sum( f => f.NumberOfLines ) } );
+			var scratch = filesMapped.Values.FirstOrDefault();
+
+			Extensions =
+				excluded
+					.Concat( filesMapped.Keys )
+					.Distinct()
+					.OrderBy( e => e )
+					.Select( e =>
+					{
+						filesMapped.TryGetValue( e, out scratch );
+
+						return new ExtensionModel( e, scratch?.Count ?? 0, scratch?.Lines ?? 0, excluded.Contains( e ), this );
+					} )
+					.ToArray();
+
+			NumberOfFiles = files.Length;
+			NumberOfLines = files.Sum( f => f.NumberOfLines );
+
+			OnPropertyChange( nameof( Extensions ) );
+			OnPropertyChange( nameof( NumberOfFiles ) );
+			OnPropertyChange( nameof( NumberOfLines ) );
+		}
+
 		public void Load( string path )
 		{
 			m_model = Model.Load( path );
+
+			SyncExtensions();
 
 			IsModified = false;
 
