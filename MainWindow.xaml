@@ -121,7 +121,7 @@
 						<DataTemplate>
 							<CheckBox IsChecked="{Binding IsExcluded, Mode=TwoWay}">
 								<StackPanel Orientation="Horizontal" Margin="0,-4,0,-4">
-									<TextBlock Text="{Binding Name, Mode=OneTime}" Margin="4,0,0,4" />
+									<TextBlock Text="{Binding Name, Mode=OneTime}" Margin="4,4,0,4" />
 									<TextBlock Text=" (" Margin="0,4,0,4" />
 									<TextBlock Text="{Binding NumberOfFiles, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
 									<TextBlock Text="/" Margin="0,4,0,4" />
