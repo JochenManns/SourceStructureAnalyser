@@ -15,6 +15,8 @@ namespace SourceStructureAnalyser
 	{
 		public class FolderInfo
 		{
+			public string Description { get; set; }
+
 			[XmlAttribute( "name" )]
 			public string RelativeName { get; set; }
 

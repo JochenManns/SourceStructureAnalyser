@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SourceStructureAnalyser"
         mc:Ignorable="d"
         DataContext="{StaticResource appViewModel}"
-        Title="Quellcode-Struktur analysieren" Height="350" Width="525">
+        Title="Quellcode-Struktur analysieren" Height="600" Width="800" MinHeight="600" MinWidth="800" Icon="app.ico">
 	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="auto" />
@@ -74,6 +74,8 @@
 						<CheckBox IsChecked="{Binding IsExcluded, Mode=TwoWay}">
 							<TextBlock Text="Ausgeschlossen" Margin="4,0,4,0" />
 						</CheckBox>
+						<TextBlock Text="Beschreibung" />
+						<TextBox Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="200" TextWrapping="Wrap" AcceptsReturn="True" />
 						<TextBlock Text="Anzahl Verzeichnisse" />
 						<TextBlock Text="{Binding NumberOfFolders, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
 						<TextBlock Text="Anzahl Dateien" />

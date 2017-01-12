@@ -20,6 +20,22 @@ namespace SourceStructureAnalyser
 			}
 		}
 
+		public string Description
+		{
+			get { return m_folder.Description; }
+			set
+			{
+				if (value == m_folder.Description)
+					return;
+
+				m_folder.Description = value;
+
+				OnPropertyChange( nameof( Description ) );
+
+				m_model.IsModified = true;
+			}
+		}
+
 		public int NumberOfFolders { get; }
 
 		public int NumberOfFiles { get; private set; }
