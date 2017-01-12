@@ -20,8 +20,11 @@
 		</Grid.RowDefinitions>
 
 		<StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal">
-			<Button Click="OnLoad">Laden</Button>
-			<Button Click="OnSave" IsEnabled="{Binding IsModified, Mode=OneWay}">Speichern</Button>
+			<Button Click="OnLoad" IsEnabled="{Binding CanLoad, Mode=OneWay}">Laden</Button>
+			<Button Click="OnSave" IsEnabled="{Binding CanSave, Mode=OneWay}">Speichern</Button>
+			<Button Command="{Binding Scan, Mode=OneTime}">
+				<TextBlock Text="{Binding ScanText, Mode=OneWay}" />
+			</Button>
 		</StackPanel>
 
 		<TextBlock Grid.Row="1" Grid.Column="0" Text="Verzeichnis:" />
@@ -32,7 +35,7 @@
 			</Grid.ColumnDefinitions>
 
 			<TextBox Grid.Column="0" Text="{Binding RootFolder, Mode=TwoWay}" IsReadOnly="true" />
-			<Button Grid.Column="1" Click="OnSelectFolder">...</Button>
+			<Button Grid.Column="1" Click="OnSelectFolder" IsEnabled="{Binding CanChange, Mode=OneWay}">...</Button>
 		</Grid>
 	</Grid>
 </Window>

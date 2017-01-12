@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -36,6 +38,11 @@ namespace SourceStructureAnalyser
 		{
 			using (var stream = new FileStream( path, FileMode.Open, FileAccess.Read, FileShare.Read ))
 				return Load( stream );
+		}
+
+		public Task Scan( CancellationToken cancel )
+		{
+			return Task.Delay( 20000, cancel );
 		}
 	}
 }
