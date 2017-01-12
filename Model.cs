@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,11 +13,98 @@ namespace SourceStructureAnalyser
 	[XmlRoot( "SourceStructure" )]
 	public class Model
 	{
+		public class FolderInfo
+		{
+			[XmlAttribute( "name" )]
+			public string RelativeName { get; set; }
+
+			[XmlElement( "Folder" )]
+			public readonly List<FolderInfo> Folders = new List<FolderInfo>();
+
+			[XmlElement( "File" )]
+			public readonly List<FileInfo> Files = new List<FileInfo>();
+
+			public bool Scan( string path, HashSet<string> excludedExtensions, CancellationToken cancel )
+			{
+				if (cancel.IsCancellationRequested)
+					return false;
+
+				var knownFolders = Folders.ToDictionary( f => f.RelativeName, StringComparer.InvariantCultureIgnoreCase );
+
+				foreach (var dir in Directory.GetDirectories( path ))
+				{
+					var name = Path.GetFileName( dir );
+
+					FolderInfo folder;
+					if (!knownFolders.TryGetValue( name, out folder ))
+					{
+						folder = new FolderInfo { RelativeName = name };
+
+						knownFolders.Add( name, folder );
+
+						Folders.Add( folder );
+					}
+
+					if (!folder.Scan( dir, excludedExtensions, cancel ))
+						return false;
+				}
+
+				var knownFiles = Files.ToDictionary( f => f.Name, StringComparer.InvariantCultureIgnoreCase );
+
+				foreach (var abs in Directory.GetFiles( path ))
+				{
+					if (cancel.IsCancellationRequested)
+						return false;
+
+					var name = Path.GetFileName( abs );
+					var ext = Path.GetExtension( abs );
+					var allow = !excludedExtensions.Contains( ext ?? string.Empty );
+
+					FileInfo file;
+					if (!knownFiles.TryGetValue( name, out file ))
+					{
+						if (!allow)
+							continue;
+
+						file = new FileInfo { Name = name };
+
+						knownFiles.Add( name, file );
+
+						Files.Add( file );
+					}
+					else if (!allow)
+					{
+						knownFiles.Remove( name );
+
+						Files.Remove( file );
+					}
+
+					file.Scan( abs );
+				}
+
+				return true;
+			}
+		}
+
+		public class FileInfo
+		{
+			[XmlAttribute( "name" )]
+			public string Name { get; set; }
+
+			public void Scan( string path )
+			{
+			}
+		}
+
 		private static readonly XmlSerializer _Serializer = new XmlSerializer( typeof( Model ) );
 
 		private static readonly XmlWriterSettings _Write = new XmlWriterSettings { Encoding = Encoding.UTF8, Indent = true };
 
-		public string RootFolder { get; set; }
+		public string RootPath { get; set; }
+
+		public string[] ExcludedExtensions { get; set; } = { ".dll", ".exe", ".ocx", ".docx", ".pptx", ".tlb", ".png", ".jpg" };
+
+		public FolderInfo RootFolder { get; set; } = new FolderInfo();
 
 		public void Save( Stream stream )
 		{
@@ -40,9 +130,6 @@ namespace SourceStructureAnalyser
 				return Load( stream );
 		}
 
-		public Task Scan( CancellationToken cancel )
-		{
-			return Task.Delay( 20000, cancel );
-		}
+		public Task Scan( CancellationToken cancel ) => Task.Run( () => RootFolder.Scan( RootPath, new HashSet<string>( ExcludedExtensions, StringComparer.InvariantCultureIgnoreCase ), cancel ) );
 	}
 }

@@ -24,13 +24,13 @@ namespace SourceStructureAnalyser
 
 		public string RootFolder
 		{
-			get { return m_model.RootFolder; }
+			get { return m_model.RootPath; }
 			set
 			{
-				if (value == m_model.RootFolder)
+				if (value == m_model.RootPath)
 					return;
 
-				m_model.RootFolder = value;
+				m_model.RootPath = value;
 
 				OnModify( nameof( RootFolder ) );
 
@@ -47,6 +47,8 @@ namespace SourceStructureAnalyser
 			IsModified = true;
 
 			OnPropertyChange( propertyName );
+
+			OnPropertyChange( nameof( CanSave ) );
 			OnPropertyChange( nameof( IsModified ) );
 		}
 
@@ -57,7 +59,7 @@ namespace SourceStructureAnalyser
 			Scan = new Command( OnScan, OnCanScan );
 		}
 
-		private bool OnCanScan() => !string.IsNullOrEmpty( m_model.RootFolder ) && Directory.Exists( m_model.RootFolder );
+		private bool OnCanScan() => !string.IsNullOrEmpty( m_model.RootPath ) && Directory.Exists( m_model.RootPath );
 
 		private async void OnScan()
 		{
