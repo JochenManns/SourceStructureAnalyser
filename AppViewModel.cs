@@ -77,6 +77,10 @@ namespace SourceStructureAnalyser
 		public AppViewModel()
 		{
 			Scan = new Command( OnScan, OnCanScan );
+
+			var args = Environment.GetCommandLineArgs();
+			if (args.Length == 2)
+				Load( args[1] );
 		}
 
 		private bool OnCanScan() => !string.IsNullOrEmpty( m_model.RootPath ) && Directory.Exists( m_model.RootPath );

@@ -36,5 +36,11 @@
 			<Setter Property="VerticalAlignment" Value="Stretch" />
 			<Setter Property="HorizontalAlignment" Value="Stretch" />
 		</Style>
+
+		<Style TargetType="ComboBox">
+			<Setter Property="Margin" Value="4" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Left" />
+		</Style>
 	</Application.Resources>
 </Application>

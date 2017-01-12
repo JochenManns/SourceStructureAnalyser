@@ -13,9 +13,20 @@ namespace SourceStructureAnalyser
 	[XmlRoot( "SourceStructure" )]
 	public class Model
 	{
+		public enum FolderColors
+		{
+			Normal,
+			Grün,
+			Orange,
+			Rot
+		};
+
 		public class FolderInfo
 		{
 			public string Description { get; set; }
+
+			[XmlAttribute( "color" )]
+			public FolderColors Color { get; set; } = FolderColors.Normal;
 
 			[XmlAttribute( "name" )]
 			public string RelativeName { get; set; }

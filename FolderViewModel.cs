@@ -1,9 +1,51 @@
+using System;
+using System.Drawing;
 using System.Linq;
+using System.Windows.Media;
 
 namespace SourceStructureAnalyser
 {
 	public class FolderViewModel : ViewModel
 	{
+		private static readonly Model.FolderColors[] _Colors = (Model.FolderColors[]) Enum.GetValues( typeof( Model.FolderColors ) );
+
+		public Model.FolderColors[] Colors => _Colors;
+
+		public Model.FolderColors Color
+		{
+			get { return m_folder.Color; }
+			set
+			{
+				if (value == m_folder.Color)
+					return;
+
+				m_folder.Color = value;
+
+				OnPropertyChange( nameof( Color ) );
+				OnPropertyChange( nameof( UiColor ) );
+
+				m_model.IsModified = true;
+			}
+		}
+
+		public Brush UiColor
+		{
+			get
+			{
+				switch (Color)
+				{
+					case Model.FolderColors.Grün:
+						return new SolidColorBrush( System.Windows.Media.Color.FromRgb( 128, 128, 0 ) );
+					case Model.FolderColors.Orange:
+						return new SolidColorBrush( System.Windows.Media.Color.FromRgb( 255, 128, 0 ) );
+					case Model.FolderColors.Rot:
+						return new SolidColorBrush( System.Windows.Media.Color.FromRgb( 255, 0, 0 ) );
+					default:
+						return new SolidColorBrush( System.Windows.Media.Colors.Black );
+				}
+			}
+		}
+
 		public bool IsExcluded
 		{
 			get { return m_folder.IsExcluded; }

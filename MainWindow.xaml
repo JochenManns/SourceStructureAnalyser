@@ -59,7 +59,7 @@
 						<TreeView.Resources>
 							<HierarchicalDataTemplate DataType="{x:Type local:FolderViewModel}" ItemsSource="{Binding Folders}">
 								<StackPanel Orientation="Horizontal">
-									<TextBlock Text="{Binding Name, Mode=OneTime}" Margin="4,4,0,4" />
+									<TextBlock Text="{Binding Name, Mode=OneTime}" Foreground="{Binding UiColor, Mode=OneWay}" Margin="4,4,0,4" />
 									<TextBlock Text=" (" Margin="0,4,0,4" />
 									<TextBlock Text="{Binding NumberOfFiles, StringFormat=N0, Mode=OneTime}" Margin="0,4,0,4" />
 									<TextBlock Text="/" Margin="0,4,0,4" />
@@ -81,21 +81,29 @@
 							<RowDefinition Height="auto" />
 							<RowDefinition Height="auto" />
 							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
 							<RowDefinition Height="*" />
 						</Grid.RowDefinitions>
 
 						<CheckBox Grid.Row="0" IsChecked="{Binding IsExcluded, Mode=TwoWay}">
 							<TextBlock Text="Ausgeschlossen" Margin="4,0,4,0" />
 						</CheckBox>
-						<TextBlock Grid.Row="1" Text="Beschreibung" />
-						<TextBox Grid.Row="2" Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="200" TextWrapping="Wrap" AcceptsReturn="True" />
-						<TextBlock Grid.Row="3" Text="Anzahl Verzeichnisse" />
-						<TextBlock Grid.Row="4" Text="{Binding NumberOfFolders, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
-						<TextBlock Grid.Row="5" Text="Anzahl Dateien" />
-						<TextBlock Grid.Row="6" Text="{Binding NumberOfFiles, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
-						<TextBlock Grid.Row="7" Text="Anzahl Zeilen" />
-						<TextBlock Grid.Row="8" Text="{Binding NumberOfLines, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
-						<ListView Grid.Row="9" ItemsSource="{Binding Extensions, Mode=OneTime}">
+						<ComboBox Grid.Row="1" ItemsSource="{Binding Colors, Mode=OneTime}" SelectedItem="{Binding Color, Mode=TwoWay}">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Mode=OneTime}" Margin="2" />
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+						<TextBlock Grid.Row="2" Text="Beschreibung" />
+						<TextBox Grid.Row="3" Text="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="200" TextWrapping="Wrap" AcceptsReturn="True" />
+						<TextBlock Grid.Row="4" Text="Anzahl Verzeichnisse" />
+						<TextBlock Grid.Row="5" Text="{Binding NumberOfFolders, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<TextBlock Grid.Row="6" Text="Anzahl Dateien" />
+						<TextBlock Grid.Row="7" Text="{Binding NumberOfFiles, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<TextBlock Grid.Row="8" Text="Anzahl Zeilen" />
+						<TextBlock Grid.Row="9" Text="{Binding NumberOfLines, StringFormat=N0, FallbackValue=0, Mode=OneTime}" />
+						<ListView Grid.Row="10" ItemsSource="{Binding Extensions, Mode=OneTime}">
 							<ListView.ItemContainerStyle>
 								<Style TargetType="ListViewItem">
 									<Setter Property="HorizontalContentAlignment" Value="Center"/>
