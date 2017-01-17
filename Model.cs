@@ -10,162 +10,209 @@ using System.Xml.Serialization;
 
 namespace SourceStructureAnalyser
 {
-	[XmlRoot( "SourceStructure" )]
-	public class Model
-	{
-		public enum FolderColors
-		{
-			Normal,
-			Grün,
-			Orange,
-			Rot
-		};
+    [XmlRoot("SourceStructure")]
+    public class Model
+    {
+        public enum FolderColors
+        {
+            Normal,
+            Grün,
+            Orange,
+            Rot
+        };
 
-		public class FolderInfo
-		{
-			public string Description { get; set; }
+        public class FolderInfo
+        {
+            public string Description { get; set; }
 
-			[XmlAttribute( "color" )]
-			public FolderColors Color { get; set; } = FolderColors.Normal;
+            [XmlAttribute("color")]
+            public FolderColors Color { get; set; } = FolderColors.Normal;
 
-			[XmlAttribute( "name" )]
-			public string RelativeName { get; set; }
+            [XmlAttribute("name")]
+            public string RelativeName { get; set; }
 
-			[XmlElement( "Folder" )]
-			public readonly List<FolderInfo> Folders = new List<FolderInfo>();
+            [XmlElement("Folder")]
+            public readonly List<FolderInfo> Folders = new List<FolderInfo>();
 
-			[XmlElement( "File" )]
-			public readonly List<FileInfo> Files = new List<FileInfo>();
+            [XmlElement("File")]
+            public readonly List<FileInfo> Files = new List<FileInfo>();
 
-			[XmlAttribute( "excluded" )]
-			public bool IsExcluded { get; set; }
+            [XmlAttribute("excluded")]
+            public bool IsExcluded { get; set; }
 
-			public IEnumerable<FolderInfo> GetAllFolders() =>
-				Folders.Concat( Folders.SelectMany( f => f.Folders ) );
+            public IEnumerable<FolderInfo> GetAllFolders() =>
+                Folders.Concat(Folders.SelectMany(f => f.Folders));
 
-			public IEnumerable<FileInfo> GetAllFiles() =>
-				Files.Concat( Folders.SelectMany( f => f.GetAllFiles() ) );
+            public IEnumerable<FileInfo> GetAllFiles() =>
+                Files.Concat(Folders.SelectMany(f => f.GetAllFiles()));
 
-			public bool Scan( string path, HashSet<string> excludedExtensions, CancellationToken cancel )
-			{
-				if (cancel.IsCancellationRequested)
-					return false;
+            public Tuple<int, int> Export(string dir, StreamWriter writer)
+            {
+                dir = Path.Combine(dir, RelativeName ?? string.Empty);
 
-				var knownFolders = Folders.ToDictionary( f => f.RelativeName, StringComparer.InvariantCultureIgnoreCase );
+                var lines = 0;
+                var files = 0;
 
-				foreach (var dir in Directory.GetDirectories( path ))
-				{
-					var name = Path.GetFileName( dir );
+                foreach (var folder in Folders)
+                {
+                    var children = folder.Export(dir, writer);
 
-					FolderInfo folder;
-					if (!knownFolders.TryGetValue( name, out folder ))
-					{
-						folder = new FolderInfo { RelativeName = name };
+                    files += children.Item1;
+                    lines += children.Item2;
+                }
 
-						knownFolders.Add( name, folder );
+                foreach (var file in Files)
+                {
+                    file.Export(dir, writer);
 
-						Folders.Add( folder );
-					}
-					else if (folder.IsExcluded)
-					{
-						folder.Folders.Clear();
-						folder.Files.Clear();
+                    lines += file.NumberOfLines;
+                    files += 1;
+                }
 
-						continue;
-					}
+                writer.WriteLine($"{dir}\t{files:N0}\t{lines:N0}");
 
-					if (!folder.Scan( dir, excludedExtensions, cancel ))
-						return false;
-				}
+                return Tuple.Create(files, lines);
+            }
 
-				var knownFiles = Files.ToDictionary( f => f.Name, StringComparer.InvariantCultureIgnoreCase );
+            public bool Scan(string path, HashSet<string> excludedExtensions, CancellationToken cancel)
+            {
+                if (cancel.IsCancellationRequested)
+                    return false;
 
-				foreach (var abs in Directory.GetFiles( path ))
-				{
-					if (cancel.IsCancellationRequested)
-						return false;
+                var knownFolders = Folders.ToDictionary(f => f.RelativeName, StringComparer.InvariantCultureIgnoreCase);
 
-					var name = Path.GetFileName( abs );
-					var ext = Path.GetExtension( abs );
-					var allow = !excludedExtensions.Contains( ext ?? string.Empty );
+                foreach (var dir in Directory.GetDirectories(path))
+                {
+                    var name = Path.GetFileName(dir);
 
-					FileInfo file;
-					if (!knownFiles.TryGetValue( name, out file ))
-					{
-						if (!allow)
-							continue;
+                    FolderInfo folder;
+                    if (!knownFolders.TryGetValue(name, out folder))
+                    {
+                        folder = new FolderInfo { RelativeName = name };
 
-						file = new FileInfo { Name = name };
+                        knownFolders.Add(name, folder);
 
-						knownFiles.Add( name, file );
+                        Folders.Add(folder);
+                    }
+                    else if (folder.IsExcluded)
+                    {
+                        folder.Folders.Clear();
+                        folder.Files.Clear();
 
-						Files.Add( file );
-					}
-					else if (!allow)
-					{
-						knownFiles.Remove( name );
+                        continue;
+                    }
 
-						Files.Remove( file );
-					}
+                    if (!folder.Scan(dir, excludedExtensions, cancel))
+                        return false;
+                }
 
-					file.Scan( abs );
-				}
+                var knownFiles = Files.ToDictionary(f => f.Name, StringComparer.InvariantCultureIgnoreCase);
 
-				return true;
-			}
-		}
+                foreach (var abs in Directory.GetFiles(path))
+                {
+                    if (cancel.IsCancellationRequested)
+                        return false;
 
-		public class FileInfo
-		{
-			[XmlAttribute( "name" )]
-			public string Name { get; set; }
+                    var name = Path.GetFileName(abs);
+                    var ext = Path.GetExtension(abs);
+                    var allow = !excludedExtensions.Contains(ext ?? string.Empty);
 
-			[XmlAttribute( "lines" )]
-			public int NumberOfLines { get; set; }
+                    FileInfo file;
+                    if (!knownFiles.TryGetValue(name, out file))
+                    {
+                        if (!allow)
+                            continue;
 
-			[XmlAttribute( "excluded" )]
-			public bool IsExcluded { get; set; }
+                        file = new FileInfo { Name = name };
 
-			public void Scan( string path )
-			{
-				NumberOfLines = IsExcluded ? 0 : File.ReadAllLines( path ).Length;
-			}
-		}
+                        knownFiles.Add(name, file);
 
-		private static readonly XmlSerializer _Serializer = new XmlSerializer( typeof( Model ) );
+                        Files.Add(file);
+                    }
+                    else if (!allow)
+                    {
+                        knownFiles.Remove(name);
 
-		private static readonly XmlWriterSettings _Write = new XmlWriterSettings { Encoding = Encoding.UTF8, Indent = true };
+                        Files.Remove(file);
+                    }
 
-		public string RootPath { get; set; }
+                    file.Scan(abs);
+                }
 
-		public string[] ExcludedExtensions { get; set; } = { };
+                return true;
+            }
+        }
 
-		public FolderInfo RootFolder { get; set; } = new FolderInfo();
+        public class FileInfo
+        {
+            [XmlAttribute("name")]
+            public string Name { get; set; }
 
-		public void Save( Stream stream )
-		{
-			using (var write = XmlWriter.Create( stream, _Write ))
-				_Serializer.Serialize( write, this );
-		}
+            [XmlAttribute("lines")]
+            public int NumberOfLines { get; set; }
 
-		public void Save( string path )
-		{
-			using (var stream = new FileStream( path, FileMode.Create, FileAccess.Write, FileShare.None ))
-				Save( stream );
-		}
+            [XmlAttribute("excluded")]
+            public bool IsExcluded { get; set; }
 
-		public static Model Load( Stream stream )
-		{
-			using (var read = XmlReader.Create( stream ))
-				return (Model) _Serializer.Deserialize( read );
-		}
+            public void Scan(string path)
+            {
+                NumberOfLines = IsExcluded ? 0 : File.ReadAllLines(path).Length;
+            }
 
-		public static Model Load( string path )
-		{
-			using (var stream = new FileStream( path, FileMode.Open, FileAccess.Read, FileShare.Read ))
-				return Load( stream );
-		}
+            public void Export(string dir, StreamWriter writer) =>
+                writer.WriteLine($"{Path.Combine(dir, Name)}\t1\t{NumberOfLines:N0}");
+        }
 
-		public Task Scan( CancellationToken cancel ) => Task.Run( () => RootFolder.Scan( RootPath, new HashSet<string>( ExcludedExtensions, StringComparer.InvariantCultureIgnoreCase ), cancel ) );
-	}
+        private static readonly XmlSerializer _Serializer = new XmlSerializer(typeof(Model));
+
+        private static readonly XmlWriterSettings _Write = new XmlWriterSettings { Encoding = Encoding.UTF8, Indent = true };
+
+        public string RootPath { get; set; }
+
+        public string[] ExcludedExtensions { get; set; } = { };
+
+        public FolderInfo RootFolder { get; set; } = new FolderInfo();
+
+        public void Save(Stream stream)
+        {
+            using (var write = XmlWriter.Create(stream, _Write))
+                _Serializer.Serialize(write, this);
+        }
+
+        public void Save(string path)
+        {
+            using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                Save(stream);
+        }
+
+        public void Export(Stream stream)
+        {
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.WriteLine("Pfad\tDateien (aufsummiert)\tZeilen (aufsummiert)");
+
+                RootFolder.Export("$", writer);
+            }
+        }
+
+        public void Export(string path)
+        {
+            using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                Export(stream);
+        }
+
+        public static Model Load(Stream stream)
+        {
+            using (var read = XmlReader.Create(stream))
+                return (Model)_Serializer.Deserialize(read);
+        }
+
+        public static Model Load(string path)
+        {
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                return Load(stream);
+        }
+
+        public Task Scan(CancellationToken cancel) => Task.Run(() => RootFolder.Scan(RootPath, new HashSet<string>(ExcludedExtensions, StringComparer.InvariantCultureIgnoreCase), cancel));
+    }
 }

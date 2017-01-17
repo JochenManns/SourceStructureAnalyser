@@ -35,7 +35,25 @@ namespace SourceStructureAnalyser
 			Properties.Settings.Default.Save();
 		}
 
-		private void OnLoad( object sender, RoutedEventArgs e )
+        private void OnExport(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "Reports|*.csv|Alle Dateien|*.*",
+                Title = "Auswertung exportieren",
+                OverwritePrompt = true,
+                CheckPathExists = true,
+                AddExtension = true,
+                DefaultExt = "csv"
+            };
+
+            if (dialog.ShowDialog(this) != true)
+                return;
+
+            ViewModel.Export(dialog.FileName);
+        }
+
+        private void OnLoad( object sender, RoutedEventArgs e )
 		{
 			if (ViewModel.IsModified)
 				if (MessageBox.Show( "Änderungen verwerfen?", "Modell laden", MessageBoxButton.YesNo ) != MessageBoxResult.Yes)

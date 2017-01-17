@@ -28,7 +28,8 @@
 			<Button Command="{Binding Scan, Mode=OneTime}">
 				<TextBlock Text="{Binding ScanText, Mode=OneWay}" />
 			</Button>
-		</StackPanel>
+            <Button Click="OnExport">Report</Button>
+        </StackPanel>
 
 		<TextBlock Grid.Row="1" Grid.Column="0" Text="Verzeichnis:" />
 		<Grid Grid.Row="1" Grid.Column="2">
